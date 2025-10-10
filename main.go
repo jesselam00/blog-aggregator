@@ -1,13 +1,18 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"os"
 
+	_ "github.com/lib/pq"
+
 	"github.com/jesselam00/blog-aggregator/internal/config"
+	"github.com/jesselam00/blog-aggregator/internal/database"
 )
 
 type state struct {
+	db  *database.Queries
 	cfg *config.Config
 }
 
@@ -25,6 +30,7 @@ func main() {
 		registeredCommands: make(map[string]func(*state, command) error),
 	}
 	cmds.register("login", handlerLogin)
+	cmds.register("register", handlerRegister)
 
 	if len(os.Args) < 2 {
 		log.Fatal("Usage: cli <command> [args...]")
@@ -32,6 +38,15 @@ func main() {
 
 	cmdName := os.Args[1]
 	cmdArgs := os.Args[2:]
+
+	db, err := sql.Open("postgres", cfg.DBURL)
+	if err != nil {
+		log.Fatalf("failed to connect to db: %v", err)
+	}
+	defer db.Close()
+
+	dbQueries := database.New(db)
+	programState.db = dbQueries
 
 	err = cmds.run(programState, command{Name: cmdName, Args: cmdArgs})
 	if err != nil {

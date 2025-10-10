@@ -1,0 +1,4 @@
+"postgres://jesselam00:@localhost:5432/gator"
+
+goose -dir sql/schema postgres "postgres://jesselam00:@localhost:5432/gator" down
+goose -dir sql/schema postgres "postgres://jesselam00:@localhost:5432/gator" up
