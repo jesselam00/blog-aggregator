@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jesselam00/blog-aggregator/internal/database"
 	"github.com/google/uuid"
+	"github.com/jesselam00/blog-aggregator/internal/database"
 )
 
 func handlerAddFeed(s *state, cmd command) error {
@@ -32,6 +32,17 @@ func handlerAddFeed(s *state, cmd command) error {
 	})
 	if err != nil {
 		return fmt.Errorf("couldn't create feed: %w", err)
+	}
+
+	_, err = s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now().UTC(),
+		UpdatedAt: time.Now().UTC(),
+		UserID:    user.ID,
+		FeedID:    feed.ID,
+	})
+	if err != nil {
+		return fmt.Errorf("couldn't follow feed: %w", err)
 	}
 
 	fmt.Println("Feed created successfully:")
