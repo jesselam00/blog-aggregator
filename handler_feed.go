@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/jesselam00/blog-aggregator/internal/database"
+	"github.com/google/uuid"
 )
 
 func handlerAddFeed(s *state, cmd command) error {
@@ -35,33 +35,42 @@ func handlerAddFeed(s *state, cmd command) error {
 	}
 
 	fmt.Println("Feed created successfully:")
-	printFeed(feed)
+	printFeed(feed, user)
 	fmt.Println()
 	fmt.Println("=====================================")
 
 	return nil
 }
 
-func handlerFeeds(s *state, cmd command) error {
+func handlerListFeeds(s *state, cmd command) error {
 	feeds, err := s.db.GetFeeds(context.Background())
 	if err != nil {
 		return fmt.Errorf("couldn't get feeds: %w", err)
 	}
 
-	for _, feed := range feeds {
-		fmt.Println("/////////////////////////////////////////")
-		fmt.Printf("Feed: %s\n", feed.Name)
-		fmt.Printf("URL: %s\n", feed.Url)
-		fmt.Printf("Username: %s\n", feed.UserName)
+	if len(feeds) == 0 {
+		fmt.Println("No feeds found.")
+		return nil
 	}
+
+	fmt.Printf("Found %d feeds:\n", len(feeds))
+	for _, feed := range feeds {
+		user, err := s.db.GetUserById(context.Background(), feed.UserID)
+		if err != nil {
+			return fmt.Errorf("couldn't get user: %w", err)
+		}
+		printFeed(feed, user)
+		fmt.Println("=====================================")
+	}
+
 	return nil
 }
 
-func printFeed(feed database.Feed) {
+func printFeed(feed database.Feed, user database.User) {
 	fmt.Printf("* ID:            %s\n", feed.ID)
 	fmt.Printf("* Created:       %v\n", feed.CreatedAt)
 	fmt.Printf("* Updated:       %v\n", feed.UpdatedAt)
 	fmt.Printf("* Name:          %s\n", feed.Name)
 	fmt.Printf("* URL:           %s\n", feed.Url)
-	fmt.Printf("* UserID:        %s\n", feed.UserID)
+	fmt.Printf("* User:          %s\n", user.Name)
 }
