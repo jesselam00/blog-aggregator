@@ -10,11 +10,6 @@ import (
 )
 
 func handlerFollow(s *state, cmd command, user database.User) error {
-	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
-	if err != nil {
-		return err
-	}
-
 	if len(cmd.Args) != 1 {
 		return fmt.Errorf("usage: %s <feed_url>", cmd.Name)
 	}
@@ -41,11 +36,6 @@ func handlerFollow(s *state, cmd command, user database.User) error {
 }
 
 func handlerListFeedFollows(s *state, cmd command, user database.User) error {
-	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
-	if err != nil {
-		return err
-	}
-
 	feedFollows, err := s.db.GetFeedFollowsForUser(context.Background(), user.ID)
 	if err != nil {
 		return fmt.Errorf("couldn't get feed follows: %w", err)
