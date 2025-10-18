@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"database/sql"
+	"fmt"
+	"log"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -57,6 +59,36 @@ func scrapeFeeds(s *state, userId uuid.UUID) error {
 	fmt.Println("============================")
 	fmt.Println(rssFeed.Channel.Title)
 	for _, rssItem := range rssFeed.Channel.Item {
+
+		publishedAt := sql.NullTime{}
+		if t, err := time.Parse(time.RFC1123Z, rssItem.PubDate); err == nil {
+			publishedAt = sql.NullTime{
+				Time:  t,
+				Valid: true,
+			}
+		}
+
+		_, err = s.db.CreatePost(context.Background(), database.CreatePostParams{
+			ID:        uuid.New(),
+			CreatedAt: time.Now().UTC(),
+			UpdatedAt: time.Now().UTC(),
+			FeedID:    feed.ID,
+			Title:     rssItem.Title,
+			Description: sql.NullString{
+				String: rssItem.Description,
+				Valid:  true,
+			},
+			Url:         rssItem.Link,
+			PublishedAt: publishedAt,
+		})
+		if err != nil {
+			if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
+				continue
+			}
+			log.Printf("Couldn't create post: %v", err)
+			continue
+		}
+
 		fmt.Printf(" - %s\n", rssItem.Title)
 	}
 	fmt.Println("============================")
