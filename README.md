@@ -28,7 +28,7 @@ You can install the CLI using:
 go install github.com/yourusername/blog-aggregator@latest
 ```
 
-This will install a `gator` executable you can use in your terminal.
+This will install a `blog-aggregator` executable you can use in your terminal.
 
 ---
 
@@ -56,10 +56,10 @@ For development, you can run:
 go run .
 ```
 
-For production usage, use the installed `gator` binary:
+For production usage, use the installed `blog-aggregator` binary:
 
 ```bash
-gator <command> [args]
+blog-aggregator <command> [args]
 ```
 
 ---
@@ -108,15 +108,9 @@ sudo -u postgres psql
 ### Create Database
 
 ```sql
-CREATE DATABASE blog_aggregator;
-\c blog_aggregator
+CREATE DATABASE gator;
+\c gator
 ALTER USER postgres PASSWORD 'postgres';
-```
-
-You can query the database:
-
-```sql
-SELECT version();
 ```
 
 ---
