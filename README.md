@@ -1,135 +1,122 @@
 # 🐊 Blog Aggregator
 
-Welcome to **Blog Aggregator** — a microservice command-line RSS feed aggregator written in Go. It collects and stores posts from multiple RSS feeds in a PostgreSQL database, allowing you to fetch, follow, and read posts all in one place.
+**Blog Aggregator** is a microservice CLI RSS feed aggregator written in Go! We'll call the CLI tool `gator` because it is an aggreGATOR 🐊. This app allows you to:
+
+* Add RSS feeds from across the internet.
+* Store collected posts in a PostgreSQL database.
+* Follow and unfollow RSS feeds from other users.
+* View summaries of aggregated posts in the terminal, with links to full posts.
+
+RSS feeds are a convenient way to keep up with blogs, news sites, podcasts, and more.
 
 ---
 
 ## Prerequisites
 
-Before you get started, make sure you have:
+To run this project, you need:
 
-* **Go** installed (version 1.22+ recommended)
-  [Download Go](https://go.dev/dl/)
-
-* **PostgreSQL** installed and running
-  [Download PostgreSQL](https://www.postgresql.org/download/)
-
-You’ll also need a Postgres database set up for this project. Example:
-
-```bash
-createdb gator
-```
+* [Go 1.25+](https://go.dev/doc/install)
+* [PostgreSQL 15+](https://www.postgresql.org/download/)
 
 ---
 
-## Installation
+## Installing the CLI
 
-To install the CLI tool (`gator`), run:
-
-```bash
-go install github.com/jesselam00/blog-aggregator@latest
-```
-
-Make sure your Go bin is on your PATH:
+You can install the CLI using:
 
 ```bash
-export PATH="$PATH:$(go env GOPATH)/bin"
+go install github.com/yourusername/blog-aggregator@latest
 ```
 
-Now you can run the CLI anywhere by typing:
-
-```bash
-gator
-```
+This will install a `gator` executable you can use in your terminal.
 
 ---
 
 ## Configuration
 
-`gator` requires a config file to connect to your database and manage user sessions.
+`gator` uses a JSON config file located at `~/.gatorconfig.json`:
 
-Run the following command to set up your config file:
-
-```bash
-gator register <username>
+```json
+{
+  "db_url": "postgres://user:password@localhost:5432/blog_aggregator",
+  "current_user_name": "your_username"
+}
 ```
 
-This creates a config file in:
-
-```
-~/.gatorconfig.json
-```
-
-Inside it, you’ll find your database connection string and the current user.
+* `db_url`: Connection string to your PostgreSQL database.
+* `current_user_name`: Automatically set by the application after using the register.
 
 ---
 
-## Usage
+## Running the CLI
 
-Here are a few useful commands:
-
-| Command                      | Description                                               |
-| ---------------------------- | --------------------------------------------------------- |
-| `gator register <username>`  | Registers a new user and creates the config file          |
-| `gator login <username>`     | Logs in as an existing user                               |
-| `gator addfeed <name> <url>` | Adds a new RSS feed to track                              |
-| `gator listfeeds`            | Lists all feeds currently being tracked                   |
-| `gator agg`                  | Starts fetching posts from all feeds in a continuous loop |
-| `gator browse`               | Displays the most recent posts for your user              |
-
-You can always run:
-
-```bash
-gator help
-```
-
-to see all available commands.
-
----
-
-## Development
-
-To build locally (for testing or development):
+For development, you can run:
 
 ```bash
 go run .
 ```
 
-For production use (after building/installing):
+For production usage, use the installed `gator` binary:
 
 ```bash
-gator
+gator <command> [args]
 ```
 
-Go programs are statically compiled — once built, you can run the `gator` binary without needing Go installed on the target machine.
+---
+
+## Commands
+
+The Blog Aggregator CLI supports the following commands:
+
+| Command    | Description                                         | Usage                          | Login Required |
+|------------|-----------------------------------------------------|--------------------------------|----------------|
+| register   | Create a new user                                   | `register <name>`              | No             |
+| login      | Switch to an existing user                          | `login <name>`                 | No             |
+| reset      | Reset the database by deleting all users            | `reset`                        | No             |
+| users      | List all users and highlight the current one       | `users`                        | No             |
+| agg        | Collect feeds periodically                          | `agg <time_between_requests>`  | Yes            |
+| addfeed    | Add a new RSS feed                                   | `addfeed <feed_url>`           | Yes            |
+| feeds      | List all available feeds                             | `feeds`                        | No             |
+| follow     | Follow an existing feed                              | `follow <feed_url>`            | Yes            |
+| following  | List all feeds the current user follows             | `following`                    | Yes            |
+| browse     | Browse posts for the current user (optional limit)  | `browse [limit]`               | Yes            |
+
 
 ---
 
 ## Database Setup
 
-Before running `gator`, ensure your PostgreSQL database is ready:
+PostgreSQL is used to store users, feeds, and posts.
 
-1. Start your Postgres server.
-2. Run the migrations:
+### macOS (Homebrew)
 
-   ```bash
-   goose -dir sql/schema postgres "postgres://<user>:<password>@localhost:5432/gator" up
-   ```
-3. Confirm tables were created:
+```bash
+brew install postgresql@15
+brew services start postgresql@15
+psql postgres
+```
 
-   ```bash
-   psql gator
-   \dt
-   ```
+### Linux / WSL (Debian)
+
+```bash
+sudo apt update
+sudo apt install postgresql postgresql-contrib
+sudo service postgresql start
+sudo -u postgres psql
+```
+
+### Create Database
+
+```sql
+CREATE DATABASE blog_aggregator;
+\c blog_aggregator
+ALTER USER postgres PASSWORD 'postgres';
+```
+
+You can query the database:
+
+```sql
+SELECT version();
+```
 
 ---
-
-## Repository
-
-GitHub Repository:
-[https://github.com/jesselam00/blog-aggregator](https://github.com/jesselam00/blog-aggregator)
-
----
-
-Happy hacking! 🐊
-Now go aggregate some blogs!
